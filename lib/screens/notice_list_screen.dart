@@ -62,8 +62,8 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       if (!mounted) return;
       setState(() => _liberalNotices = notices);
     } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = '교양 영역 데이터 로드 실패: $e');
+      // DB 로드 실패 시 교양영역 항목만 미표시 (레이아웃 영향 없음)
+      debugPrint('liberal DB load error: $e');
     }
   }
 
