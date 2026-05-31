@@ -1,156 +1,191 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:hoseo_notice_app/models/notice.dart';
-import 'package:hoseo_notice_app/widgets/notice_card.dart';
+import '../models/notice.dart';
+import '../services/api_service.dart';
+import 'notice_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  List<Notice> _searchResults = [];
-
-  void _performSearch(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-      });
-      return;
-    }
-
-    final results = noticeData
-        .where((notice) =>
-            notice.title.contains(query) ||
-            notice.department.contains(query) ||
-            notice.category.toString().contains(query))
-        .toList();
-
-    setState(() {
-      _searchResults = results;
-    });
-  }
+  final TextEditingController _controller = TextEditingController();
+  Timer? _debounce;
+  List<Notice> _results = [];
+  bool _isSearching = false;
+  String _lastQuery = '';
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _debounce?.cancel();
+    _controller.dispose();
     super.dispose();
+  }
+
+  void _onChanged(String query) {
+    _debounce?.cancel();
+    if (query.trim().isEmpty) {
+      setState(() { _results = []; _lastQuery = ''; });
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 600), () => _search(query.trim()));
+  }
+
+  Future<void> _search(String query) async {
+    setState(() { _isSearching = true; _lastQuery = query; });
+    try {
+      final results = await ApiService.search(query);
+      if (!mounted) return;
+      setState(() { _results = results; _isSearching = false; });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() { _results = []; _isSearching = false; });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        title: const Text('검색'),
+        backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _performSearch,
-              decoration: InputDecoration(
-                hintText: '공지사항 검색...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _performSearch('');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+        title: Container(
+          height: 40,
+          decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20)),
+          child: TextField(
+            controller: _controller,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: '공지사항 검색...',
+              hintStyle: TextStyle(color: Colors.white54),
+              prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
             ),
+            onChanged: _onChanged,
+            onSubmitted: (q) { if (q.trim().isNotEmpty) _search(q.trim()); },
           ),
-          Expanded(
-            child: _buildSearchContent(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () => Navigator.of(context).pushNamed('/settings'),
           ),
         ],
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_controller.text.isEmpty) {
+      return const Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.search, size: 64, color: Color(0xFFD1D5DB)),
+          SizedBox(height: 16),
+          Text('검색어를 입력하세요', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 15)),
+          SizedBox(height: 8),
+          Text('제목, 담당 부서로 검색할 수 있어요', style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 13)),
+        ]),
+      );
+    }
+    if (_isSearching) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF1E3A8A)));
+    }
+    if (_results.isEmpty) {
+      return Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.search_off, size: 64, color: Color(0xFFD1D5DB)),
+          const SizedBox(height: 16),
+          Text('"$_lastQuery" 검색 결과가 없습니다.',
+              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 15)),
+        ]),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      itemCount: _results.length,
+      itemBuilder: (_, i) => _buildItem(_results[i]),
+    );
+  }
+
+  Widget _buildItem(Notice notice) {
+    final color = Notice.categoryColor(notice.category);
+    return GestureDetector(
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => NoticeDetailScreen(notice: notice))),
+      child: Container(
+        color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                _highlightText(notice.title, _lastQuery),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 12, color: Color(0xFFB0B8C1)),
+                    const SizedBox(width: 3),
+                    Flexible(
+                      child: Text(notice.department,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+                    ),
+                    if (notice.date.isNotEmpty) ...[
+                      const SizedBox(width: 10),
+                      const Icon(Icons.calendar_today_outlined, size: 11, color: Color(0xFFB0B8C1)),
+                      const SizedBox(width: 3),
+                      Text(notice.date,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+                    ],
+                  ],
+                ),
+              ]),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20)),
+              child: Text(notice.category,
+                  style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSearchContent() {
-    if (_searchController.text.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_outlined,
-              size: 56,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '검색어를 입력하세요',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '제목, 부서명, 카테고리로 검색할 수 있어요',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
+  Widget _highlightText(String text, String query) {
+    if (query.isEmpty) {
+      return Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
     }
-
-    if (_searchResults.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_outlined,
-              size: 56,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '검색 결과가 없습니다',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '다른 검색어를 입력해보세요',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
+    final lower = text.toLowerCase();
+    final q = query.toLowerCase();
+    final idx = lower.indexOf(q);
+    if (idx == -1) {
+      return Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
     }
-
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: _searchResults.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        return NoticeCard(notice: _searchResults[index]);
-      },
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
+        children: [
+          TextSpan(text: text.substring(0, idx)),
+          TextSpan(text: text.substring(idx, idx + query.length),
+              style: const TextStyle(color: Color(0xFF1E3A8A), backgroundColor: Color(0xFFDBEAFE))),
+          TextSpan(text: text.substring(idx + query.length)),
+        ],
+      ),
     );
   }
 }
