@@ -6,6 +6,7 @@ class ApiService {
   static const _baseUrl = 'https://www.hoseo.ac.kr';
   static const _listAction = 'MAPP_1708240139';
   static const _categoryCode = 'CTG_17082400011';
+  static const _volunteerCategoryCode = 'CTG_17082400014';
   static const _headers = {
     'User-Agent':
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
@@ -14,10 +15,11 @@ class ApiService {
   };
 
   static Future<List<Notice>> fetchAll({int pages = 4}) async {
-    // 일반 최신 공지 + 봉사 키워드 전용 검색 병렬 실행
+    // 일반 공지 4페이지 + 사회봉사 전용 게시판 2페이지 병렬 실행
     final futures = [
-      ...List.generate(pages, (i) => _fetchPage(i + 1)),
-      _fetchKeyword('봉사'),
+      ...List.generate(pages, (i) => _fetchPage(i + 1, _categoryCode)),
+      _fetchPage(1, _volunteerCategoryCode),
+      _fetchPage(2, _volunteerCategoryCode),
     ];
     final results = await Future.wait(futures);
     final all = results.expand((list) => list).toList();
@@ -27,31 +29,11 @@ class ApiService {
     return all.where((n) => seen.add(n.id)).toList();
   }
 
-  static Future<List<Notice>> _fetchKeyword(String keyword) async {
+  static Future<List<Notice>> _fetchPage(int page, String categoryCode) async {
     final url = Uri.parse(
       '$_baseUrl/Home/BBSList.mbz'
       '?action=$_listAction'
-      '&schCategorycode=$_categoryCode'
-      '&schKeytype=subject'
-      '&schKeyword=${Uri.encodeComponent(keyword)}'
-      '&pageIndex=1',
-    );
-    try {
-      final res = await http
-          .get(url, headers: _headers)
-          .timeout(const Duration(seconds: 15));
-      if (res.statusCode != 200) return [];
-      return _parseList(utf8.decode(res.bodyBytes, allowMalformed: true));
-    } catch (_) {
-      return [];
-    }
-  }
-
-  static Future<List<Notice>> _fetchPage(int page) async {
-    final url = Uri.parse(
-      '$_baseUrl/Home/BBSList.mbz'
-      '?action=$_listAction'
-      '&schCategorycode=$_categoryCode'
+      '&schCategorycode=$categoryCode'
       '&pageIndex=$page',
     );
     try {
@@ -60,14 +42,15 @@ class ApiService {
           .timeout(const Duration(seconds: 15));
       if (res.statusCode != 200) return [];
       final html = utf8.decode(res.bodyBytes, allowMalformed: true);
-      return _parseList(html);
+      return _parseList(html, categoryCode: categoryCode);
     } catch (_) {
       return [];
     }
   }
 
-  static List<Notice> _parseList(String html) {
+  static List<Notice> _parseList(String html, {String categoryCode = _categoryCode}) {
     final notices = <Notice>[];
+    final isVolunteer = categoryCode == _volunteerCategoryCode;
     // <tr> 블록 단위로 분리
     final blocks = html.split(RegExp(r'<tr[\s>]'));
     for (final block in blocks) {
@@ -84,7 +67,7 @@ class ApiService {
       final detailUrl = '$_baseUrl/Home/BBSView.mbz'
           '?action=$_listAction'
           '&schIdx=$articleId'
-          '&schCategorycode=$_categoryCode'
+          '&schCategorycode=$categoryCode'
           '&schKeytype=subject&schKeyword=&pageIndex=1';
 
       if (title.isEmpty) continue;
@@ -94,7 +77,7 @@ class ApiService {
         title:      title,
         department: dept,
         date:       date,
-        category:   Notice.inferCategory(dept, title),
+        category:   isVolunteer ? '사회봉사' : Notice.inferCategory(dept, title),
         detailUrl:  detailUrl,
       ));
     }
