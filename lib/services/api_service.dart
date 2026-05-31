@@ -14,15 +14,37 @@ class ApiService {
   };
 
   static Future<List<Notice>> fetchAll({int pages = 4}) async {
-    final futures = List.generate(
-      pages,
-      (i) => _fetchPage(i + 1),
-    );
+    // 일반 최신 공지 + 봉사 키워드 전용 검색 병렬 실행
+    final futures = [
+      ...List.generate(pages, (i) => _fetchPage(i + 1)),
+      _fetchKeyword('봉사'),
+    ];
     final results = await Future.wait(futures);
     final all = results.expand((list) => list).toList();
-    // article_id 기준 중복 제거, 최신순 유지
+    // 날짜 내림차순 정렬 후 article_id 기준 중복 제거
+    all.sort((a, b) => b.date.compareTo(a.date));
     final seen = <String>{};
     return all.where((n) => seen.add(n.id)).toList();
+  }
+
+  static Future<List<Notice>> _fetchKeyword(String keyword) async {
+    final url = Uri.parse(
+      '$_baseUrl/Home/BBSList.mbz'
+      '?action=$_listAction'
+      '&schCategorycode=$_categoryCode'
+      '&schKeytype=subject'
+      '&schKeyword=${Uri.encodeComponent(keyword)}'
+      '&pageIndex=1',
+    );
+    try {
+      final res = await http
+          .get(url, headers: _headers)
+          .timeout(const Duration(seconds: 15));
+      if (res.statusCode != 200) return [];
+      return _parseList(utf8.decode(res.bodyBytes, allowMalformed: true));
+    } catch (_) {
+      return [];
+    }
   }
 
   static Future<List<Notice>> _fetchPage(int page) async {

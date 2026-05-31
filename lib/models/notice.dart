@@ -48,11 +48,12 @@ class Notice {
   static String inferCategory(String writer, String title) {
     final w = writer;
     final t = title;
+    // 제목에 봉사가 있으면 사회봉사 최우선 (장학팀이 올려도 봉사 공지일 수 있음)
+    if (t.contains('봉사') || w.contains('봉사') || w.contains('Caritas') ||
+        w.contains('카리타스')) { return '사회봉사'; }
     if (w.contains('장학') || t.contains('장학')) { return '장학'; }
     if (w.contains('취업') || w.contains('현장실습') ||
         t.contains('취업') || t.contains('현장실습') || t.contains('인턴')) { return '취업'; }
-    if (w.contains('봉사') || w.contains('Caritas') ||
-        t.contains('봉사')) { return '사회봉사'; }
     if (w.contains('교양') || w.contains('에듀테크') ||
         t.contains('교양')) { return '교양'; }
     if (w.contains('학사') || w.contains('교무') || w.contains('학술') ||
