@@ -102,7 +102,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF0F1E3D),
         elevation: 0,
         title: const Text('호서대학교 공지사항',
             style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
@@ -119,7 +119,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
 
   Widget _buildLoading() {
     return Container(
-      color: const Color(0xFF1E3A8A),
+      color: const Color(0xFF0F1E3D),
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -136,7 +136,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   Widget _buildBody() {
     return RefreshIndicator(
       onRefresh: _loadNotices,
-      color: const Color(0xFF1E3A8A),
+      color: const Color(0xFF0F1E3D),
       child: Column(
         children: [
           if (_error != null)
@@ -160,25 +160,53 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     );
   }
 
+  static List<Color> _bannerGradient(String category) {
+    switch (category) {
+      case '학사': return [const Color(0xFF1D4ED8), const Color(0xFF60A5FA)];
+      case '장학': return [const Color(0xFF065F46), const Color(0xFF10B981)];
+      case '취업': return [const Color(0xFF7C3AED), const Color(0xFFA78BFA)];
+      case '외부': return [const Color(0xFF92400E), const Color(0xFFF59E0B)];
+      case '사회봉사': return [const Color(0xFF9D174D), const Color(0xFFF472B6)];
+      case '교양': return [const Color(0xFF0E7490), const Color(0xFF22D3EE)];
+      default: return [const Color(0xFF0F1E3D), const Color(0xFF3B82F6)];
+    }
+  }
+
+  static IconData _bannerIcon(String category) {
+    switch (category) {
+      case '학사': return Icons.school_outlined;
+      case '장학': return Icons.attach_money_rounded;
+      case '취업': return Icons.work_outline_rounded;
+      case '외부': return Icons.public_outlined;
+      case '사회봉사': return Icons.volunteer_activism_outlined;
+      case '교양': return Icons.menu_book_outlined;
+      default: return Icons.campaign_outlined;
+    }
+  }
+
   Widget _buildBanner() {
     final banners = _bannerNotices;
     if (banners.isEmpty) return const SizedBox.shrink();
     return Container(
-      color: const Color(0xFF1E3A8A),
+      color: const Color(0xFF0F1E3D),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Column(
         children: [
-          SizedBox(
-            height: 140,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: banners.length,
-              onPageChanged: (i) => setState(() => _bannerIndex = i),
-              itemBuilder: (_, i) => _buildBannerCard(banners[i]),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 150,
+              child: PageView.builder(
+                controller: _pageController,
+                padEnds: false,
+                itemCount: banners.length,
+                onPageChanged: (i) => setState(() => _bannerIndex = i),
+                itemBuilder: (_, i) => _buildBannerCard(banners[i]),
+              ),
             ),
           ),
           if (banners.length > 1) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(banners.length, (i) => AnimatedContainer(
@@ -199,34 +227,96 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   }
 
   Widget _buildBannerCard(Notice notice) {
-    final color = Notice.categoryColor(notice.category);
+    final gradients = _bannerGradient(notice.category);
+    final icon = _bannerIcon(notice.category);
     return GestureDetector(
       onTap: () => _openDetail(notice),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white24),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-              child: Text(notice.category,
-                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+          gradient: LinearGradient(
+            colors: gradients,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: gradients[0].withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(height: 10),
-            Text(notice.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, height: 1.3)),
-            const SizedBox(height: 4),
-            Text(notice.department,
-                style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          ],
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Icon(icon, size: 80, color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(icon, size: 12, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(notice.category,
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text('최신 공지',
+                          style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  notice.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    height: 1.4,
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 12, color: Colors.white60),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        notice.department,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.white60),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -250,10 +340,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF1E3A8A) : Colors.transparent,
+                  color: isSelected ? const Color(0xFF0F1E3D) : Colors.transparent,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF1E3A8A) : const Color(0xFFD1D5DB),
+                    color: isSelected ? const Color(0xFF0F1E3D) : const Color(0xFFD1D5DB),
                   ),
                 ),
                 child: Text(cat,
@@ -286,7 +376,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
       itemCount: notices.length,
       itemBuilder: (_, i) => _buildNoticeItem(notices[i]),
     );
@@ -297,8 +387,19 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     return GestureDetector(
       onTap: () => _openDetail(notice),
       child: Container(
-        color: notice.isPinned ? const Color(0xFFF0FDF4) : Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: notice.isPinned ? const Color(0xFFF0FDF4) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -319,7 +420,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       const Icon(Icons.person_outline, size: 12, color: Color(0xFFB0B8C1)),

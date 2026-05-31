@@ -4,8 +4,9 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime time;
+  final List<String>? suggestions;
 
-  ChatMessage({required this.text, required this.isUser, required this.time});
+  ChatMessage({required this.text, required this.isUser, required this.time, this.suggestions});
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       text: '안녕하세요! 호서대학교 공지사항 도우미입니다 😊\n궁금한 것이 있으면 편하게 물어보세요!',
       isUser: false,
       time: DateTime.now(),
+      suggestions: ['장학금 안내', '수강신청', '취업 정보', '사회봉사'],
     ),
   ];
   bool _isTyping = false;
@@ -76,7 +78,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -89,8 +91,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF0F1E3D),
         elevation: 0,
+        toolbarHeight: 56,
         title: Row(
           children: [
             Container(
@@ -121,15 +124,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       body: Column(
         children: [
-          _buildQuickChips(),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              reverse: true,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (_, i) {
-                if (_isTyping && i == _messages.length) return _buildTypingIndicator();
-                return _buildBubble(_messages[i]);
+                if (_isTyping && i == 0) return _buildTypingIndicator();
+                final msgIndex = _messages.length - 1 - (i - (_isTyping ? 1 : 0));
+                return _buildBubble(_messages[msgIndex]);
               },
             ),
           ),
@@ -139,77 +143,97 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
-  Widget _buildQuickChips() {
-    final chips = ['장학금 안내', '수강신청', '취업 정보', '사회봉사'];
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: chips.map((chip) => GestureDetector(
-            onTap: () {
-              _controller.text = chip;
-              _send();
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Text(chip, style: const TextStyle(fontSize: 13, color: Color(0xFF1E3A8A), fontWeight: FontWeight.w500)),
-            ),
-          )).toList(),
-        ),
-      ),
-    );
-  }
+  static const Map<String, IconData> _chipIcons = {
+    '장학금 안내': Icons.school_outlined,
+    '수강신청': Icons.calendar_month_outlined,
+    '취업 정보': Icons.business_center_outlined,
+    '사회봉사': Icons.volunteer_activism_outlined,
+  };
 
   Widget _buildBubble(ChatMessage msg) {
     final isUser = msg.isUser;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            Container(
-              width: 30,
-              height: 30,
-              decoration: const BoxDecoration(color: Color(0xFF1E3A8A), shape: BoxShape.circle),
-              child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isUser ? const Color(0xFF1E3A8A) : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(isUser ? 18 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 18),
+          Row(
+            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isUser) ...[
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: const BoxDecoration(color: Color(0xFF0F1E3D), shape: BoxShape.circle),
+                  child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
                 ),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
-                ],
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isUser ? const Color(0xFF0F1E3D) : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isUser ? 18 : 4),
+                      bottomRight: Radius.circular(isUser ? 4 : 18),
+                    ),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: Text(
+                    msg.text,
+                    style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
+                  ),
+                ),
               ),
-              child: Text(
-                msg.text,
-                style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
-              ),
-            ),
+              if (isUser) const SizedBox(width: 4),
+            ],
           ),
-          if (isUser) const SizedBox(width: 4),
+          if (!isUser && msg.suggestions != null) ...[
+            const SizedBox(height: 10),
+            _buildSuggestionGrid(msg.suggestions!),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildSuggestionGrid(List<String> suggestions) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: suggestions.map((chip) {
+        final icon = _chipIcons[chip] ?? Icons.help_outline;
+        return GestureDetector(
+          onTap: () {
+            _controller.text = chip;
+            _send();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 5, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 15, color: const Color(0xFF0F1E3D)),
+                const SizedBox(width: 6),
+                Text(chip, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF1F2937))),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -221,7 +245,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           Container(
             width: 30,
             height: 30,
-            decoration: const BoxDecoration(color: Color(0xFF1E3A8A), shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: Color(0xFF0F1E3D), shape: BoxShape.circle),
             child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 8),
@@ -276,7 +300,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(color: Color(0xFF1E3A8A), shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: Color(0xFF0F1E3D), shape: BoxShape.circle),
               child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),
@@ -324,7 +348,7 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                color: Color.fromRGBO(30, 58, 138, opacity.clamp(0.3, 1.0)),
+                color: Color.fromRGBO(15, 30, 61, opacity.clamp(0.3, 1.0)),
                 shape: BoxShape.circle,
               ),
             );

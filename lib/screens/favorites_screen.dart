@@ -15,7 +15,7 @@ class FavoritesScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: const Color(0xFFF4F6F9),
           appBar: AppBar(
-            backgroundColor: const Color(0xFF1E3A8A),
+            backgroundColor: const Color(0xFF0F1E3D),
             elevation: 0,
             title: const Text('즐겨찾기', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             actions: [

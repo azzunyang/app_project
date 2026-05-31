@@ -25,7 +25,7 @@ class HoseoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
+          seedColor: const Color(0xFF0F1E3D),
           brightness: Brightness.light,
         ),
         useMaterial3: true,

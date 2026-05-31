@@ -64,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(
               isActive ? activeIcon : icon,
-              color: isActive ? const Color(0xFF1E3A8A) : const Color(0xFF9CA3AF),
+              color: isActive ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -72,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isActive ? const Color(0xFF1E3A8A) : const Color(0xFF9CA3AF),
+                color: isActive ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

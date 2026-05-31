@@ -51,26 +51,33 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF0F1E3D),
         elevation: 0,
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20)),
-          child: TextField(
-            controller: _controller,
-            autofocus: true,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: '공지사항 검색...',
-              hintStyle: TextStyle(color: Colors.white54),
-              prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
+        toolbarHeight: 56,
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20)),
+            child: TextField(
+              controller: _controller,
+              autofocus: true,
+              textAlignVertical: TextAlignVertical.center,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: '공지사항 검색...',
+                hintStyle: TextStyle(color: Colors.white54),
+                prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: _onChanged,
+              onSubmitted: (q) { if (q.trim().isNotEmpty) _search(q.trim()); },
             ),
-            onChanged: _onChanged,
-            onSubmitted: (q) { if (q.trim().isNotEmpty) _search(q.trim()); },
           ),
         ),
         actions: [
@@ -86,31 +93,58 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildBody() {
     if (_controller.text.isEmpty) {
-      return const Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(Icons.search, size: 64, color: Color(0xFFD1D5DB)),
-          SizedBox(height: 16),
-          Text('검색어를 입력하세요', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 15)),
-          SizedBox(height: 8),
-          Text('제목, 담당 부서로 검색할 수 있어요', style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 13)),
-        ]),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: Center(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF0F2F7),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.search, size: 40, color: Color(0xFFD1D5DB)),
+            ),
+            const SizedBox(height: 16),
+            const Text('검색어를 입력하세요',
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            const Text('제목, 담당 부서로 검색할 수 있어요',
+                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+          ]),
+        ),
       );
     }
     if (_isSearching) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF1E3A8A)));
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF0F1E3D)));
     }
     if (_results.isEmpty) {
-      return Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.search_off, size: 64, color: Color(0xFFD1D5DB)),
-          const SizedBox(height: 16),
-          Text('"$_lastQuery" 검색 결과가 없습니다.',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 15)),
-        ]),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: Center(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF0F2F7),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.search_off, size: 40, color: Color(0xFFD1D5DB)),
+            ),
+            const SizedBox(height: 16),
+            Text('"$_lastQuery" 검색 결과가 없습니다.',
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 15, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            const Text('다른 검색어를 시도해 보세요',
+                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+          ]),
+        ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
       itemCount: _results.length,
       itemBuilder: (_, i) => _buildItem(_results[i]),
     );
@@ -122,9 +156,19 @@ class _SearchScreenState extends State<SearchScreen> {
       onTap: () => Navigator.push(context,
           MaterialPageRoute(builder: (_) => NoticeDetailScreen(notice: notice))),
       child: Container(
-        color: Colors.white,
-        margin: const EdgeInsets.only(bottom: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -182,7 +226,7 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           TextSpan(text: text.substring(0, idx)),
           TextSpan(text: text.substring(idx, idx + query.length),
-              style: const TextStyle(color: Color(0xFF1E3A8A), backgroundColor: Color(0xFFDBEAFE))),
+              style: const TextStyle(color: Color(0xFF0F1E3D), backgroundColor: Color(0xFFDBEAFE))),
           TextSpan(text: text.substring(idx + query.length)),
         ],
       ),

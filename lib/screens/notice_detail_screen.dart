@@ -109,7 +109,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF0F1E3D),
         foregroundColor: Colors.white,
         title: const Text('공지사항', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
@@ -146,7 +146,13 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
   Widget _buildHeader(Color color) {
     return Container(
       width: double.infinity,
-      color: const Color(0xFF1E3A8A),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F1E3D), Color(0xFF1B3E7A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +213,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: Color(0xFF1E3A8A)),
+                  strokeWidth: 2, color: Color(0xFF0F1E3D)),
             ),
             SizedBox(width: 10),
             Text('이미지 불러오는 중...',
@@ -344,7 +350,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: lines.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF9FAFB), indent: 16),
+            separatorBuilder: (_, sep) => const Divider(height: 1, color: Color(0xFFF9FAFB), indent: 16),
             itemBuilder: (_, i) => _buildSubjectItem(lines[i], i),
           ),
         ],
@@ -425,7 +431,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
               child: Text(code,
                   style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF2563EB),
+                      color: Color(0xFF0F1E3D),
                       fontWeight: FontWeight.w500)),
             ),
           ],
@@ -604,7 +610,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.download_outlined, size: 18, color: Color(0xFF1E3A8A)),
+            const Icon(Icons.download_outlined, size: 18, color: Color(0xFF0F1E3D)),
           ],
         ),
       ),
@@ -638,7 +644,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
       case 'hwp':
       case 'hwpx':
       case 'doc':
-      case 'docx': return const Color(0xFF2563EB);
+      case 'docx': return const Color(0xFF0F1E3D);
       case 'xls':
       case 'xlsx': return const Color(0xFF16A34A);
       case 'ppt':
@@ -664,12 +670,12 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF1E3A8A), Color(0xFF2B55C5)],
+              colors: [Color(0xFF0F1E3D), Color(0xFF1B3E7A)],
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.35),
+                color: const Color(0xFF0F1E3D).withValues(alpha: 0.35),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -764,11 +770,11 @@ class _ImageCardState extends State<_ImageCard> {
                   color: const Color(0xFFF4F6F9),
                   child: const Center(
                     child: CircularProgressIndicator(
-                        color: Color(0xFF1E3A8A), strokeWidth: 2),
+                        color: Color(0xFF0F1E3D), strokeWidth: 2),
                   ),
                 );
               },
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, e, s) => const SizedBox.shrink(),
             ),
           ),
         ),
@@ -778,8 +784,8 @@ class _ImageCardState extends State<_ImageCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F4FF),
-                border: Border.all(color: const Color(0xFFDDE3F5)),
+                color: const Color(0xFFEFF6FF),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(10),
                   bottomRight: Radius.circular(10),
@@ -793,14 +799,14 @@ class _ImageCardState extends State<_ImageCard> {
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
                     size: 18,
-                    color: const Color(0xFF1E3A8A),
+                    color: const Color(0xFF0F1E3D),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     _expanded ? '이미지 접기' : '이미지 전체 보기',
                     style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF1E3A8A),
+                        color: Color(0xFF0F1E3D),
                         fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -841,7 +847,7 @@ class _FullScreenImagePage extends StatelessWidget {
                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
               );
             },
-            errorBuilder: (_, __, ___) => const Center(
+            errorBuilder: (_, e, s) => const Center(
               child: Text('이미지를 불러올 수 없습니다.',
                   style: TextStyle(color: Colors.white54)),
             ),

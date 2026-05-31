@@ -50,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF0F1E3D),
         foregroundColor: Colors.white,
         elevation: 0,
         title: const Text('설정', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -172,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: const Color(0xFF1E3A8A),
+                activeThumbColor: const Color(0xFF0F1E3D),
                 activeTrackColor: const Color(0xFF93C5FD),
               ),
             ],
@@ -249,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onConfirm();
               Navigator.pop(context);
             },
-            child: const Text('확인', style: TextStyle(color: Color(0xFF1E3A8A))),
+            child: const Text('확인', style: TextStyle(color: Color(0xFF0F1E3D))),
           ),
         ],
       ),
