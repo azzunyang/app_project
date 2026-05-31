@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/notice.dart';
 import '../data/sample_data.dart';
 import '../services/api_service.dart';
+import '../services/favorites_service.dart';
 import '../services/liberal_db_service.dart';
+import '../services/notification_service.dart';
 import 'notice_detail_screen.dart';
 
 class NoticeListScreen extends StatefulWidget {
@@ -51,6 +53,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     super.initState();
     _loadNotices();
     _loadLiberalSubjects();
+    NotificationService.requestPermission();
   }
 
   Future<void> _loadLiberalSubjects() async {
@@ -65,8 +68,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     setState(() { _isLoading = true; _error = null; });
     try {
       final data = await ApiService.fetchAll();
+      await FavoritesService.applyTo(data);
       if (!mounted) return;
       allNotices = data;
+      if (data.isNotEmpty) NotificationService.markSeen(data.first.id);
       setState(() { _notices = data; _isLoading = false; });
       _startAutoSlide();
     } catch (e) {

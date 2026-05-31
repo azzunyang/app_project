@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:workmanager/workmanager.dart';
 import 'screens/splash_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    await NotificationService.init();
+    await NotificationService.checkAndNotify();
+    return true;
+  });
+}
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -12,6 +23,17 @@ void main() {
       statusBarIconBrightness: Brightness.light,
     ),
   );
+
+  await NotificationService.init();
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+  await Workmanager().registerPeriodicTask(
+    'hoseo_notice_check',
+    'noticeCheck',
+    frequency: const Duration(hours: 1),
+    existingWorkPolicy: ExistingWorkPolicy.keep,
+    constraints: Constraints(networkType: NetworkType.connected),
+  );
+
   runApp(const HoseoApp());
 }
 

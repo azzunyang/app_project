@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../data/sample_data.dart';
+import '../services/favorites_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -108,7 +110,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: '즐겨찾기 전체 삭제',
               color: const Color(0xFFEF4444),
               showDivider: false,
-              onTap: () => _showDialog('즐겨찾기를 전체 삭제하겠습니까?', () {}),
+              onTap: () => _showDialog('즐겨찾기를 전체 삭제하겠습니까?', () async {
+                await FavoritesService.clearAll();
+                for (final n in allNotices) {
+                  n.isFavorite = false;
+                }
+                favoritesNotifier.value++;
+              }),
             ),
           ]),
         ],

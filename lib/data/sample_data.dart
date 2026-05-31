@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/notice.dart';
+import '../services/favorites_service.dart';
 
 final List<Notice> sampleNotices = [
   Notice(
@@ -112,4 +113,9 @@ final favoritesNotifier = ValueNotifier<int>(0);
 void toggleFavorite(Notice notice) {
   notice.isFavorite = !notice.isFavorite;
   favoritesNotifier.value++;
+  if (notice.isFavorite) {
+    FavoritesService.add(notice.id);
+  } else {
+    FavoritesService.remove(notice.id);
+  }
 }
