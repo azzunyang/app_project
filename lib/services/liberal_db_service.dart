@@ -10,11 +10,10 @@ class LiberalDbService {
     final docsDir = await getApplicationDocumentsDirectory();
     final dbPath = join(docsDir.path, 'liberal_area$area.db');
 
-    if (!File(dbPath).existsSync()) {
-      final data = await rootBundle.load('assets/db/liberal_area$area.db');
-      final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await File(dbPath).writeAsBytes(bytes, flush: true);
-    }
+    // 항상 assets에서 최신 파일로 덮어씀 (버전 불일치 방지)
+    final data = await rootBundle.load('assets/db/liberal_area$area.db');
+    final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    await File(dbPath).writeAsBytes(bytes, flush: true);
 
     final db = await openDatabase(dbPath, readOnly: true);
     final rows = await db.query('liberal_subjects');

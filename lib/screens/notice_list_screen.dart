@@ -61,7 +61,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       final notices = await LiberalDbService.loadAll();
       if (!mounted) return;
       setState(() => _liberalNotices = notices);
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = '교양 영역 데이터 로드 실패: $e');
+    }
   }
 
   Future<void> _loadNotices() async {
