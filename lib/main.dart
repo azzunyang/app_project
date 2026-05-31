@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:workmanager/workmanager.dart';
@@ -25,14 +26,17 @@ void main() async {
   );
 
   await NotificationService.init();
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
-  await Workmanager().registerPeriodicTask(
-    'hoseo_notice_check',
-    'noticeCheck',
-    frequency: const Duration(hours: 1),
-    existingWorkPolicy: ExistingWorkPolicy.keep,
-    constraints: Constraints(networkType: NetworkType.connected),
-  );
+  // Android만 백그라운드 주기 작업 지원 (iOS는 앱 실행 시 포그라운드 체크)
+  if (Platform.isAndroid) {
+    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    await Workmanager().registerPeriodicTask(
+      'hoseo_notice_check',
+      'noticeCheck',
+      frequency: const Duration(hours: 1),
+      existingWorkPolicy: ExistingWorkPolicy.keep,
+      constraints: Constraints(networkType: NetworkType.connected),
+    );
+  }
 
   runApp(const HoseoApp());
 }

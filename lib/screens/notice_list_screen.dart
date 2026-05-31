@@ -71,7 +71,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       await FavoritesService.applyTo(data);
       if (!mounted) return;
       allNotices = data;
-      if (data.isNotEmpty) NotificationService.markSeen(data.first.id);
+      // iOS: 앱 실행 시 새 공지 확인 후 알림 발송 (Android는 백그라운드 workmanager가 담당)
+      NotificationService.checkAndNotify().then((_) {
+        if (data.isNotEmpty) NotificationService.markSeen(data.first.id);
+      });
       setState(() { _notices = data; _isLoading = false; });
       _startAutoSlide();
     } catch (e) {
