@@ -535,7 +535,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
 
   Widget _buildAttachments() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
