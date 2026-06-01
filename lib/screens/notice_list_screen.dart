@@ -28,7 +28,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
 
   final List<String> _categories = ['전체', '학사', '장학', '취업', '외부', '사회봉사', '교양', '기타'];
 
-  // 각 카테고리의 최신 공지 1개씩
   List<Notice> get _bannerNotices {
     const cats = ['학사', '장학', '취업', '외부', '사회봉사', '교양', '기타'];
     final result = <Notice>[];
@@ -62,7 +61,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       if (!mounted) return;
       setState(() => _liberalNotices = notices);
     } catch (e) {
-      // DB 로드 실패 시 교양영역 항목만 미표시 (레이아웃 영향 없음)
       debugPrint('liberal DB load error: $e');
     }
   }
@@ -74,7 +72,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       await FavoritesService.applyTo(data);
       if (!mounted) return;
       allNotices = data;
-      // iOS: 앱 실행 시 새 공지 확인 후 알림 발송 (Android는 백그라운드 workmanager가 담당)
       NotificationService.checkAndNotify().then((_) {
         if (data.isNotEmpty) NotificationService.markSeen(data.first.id);
       });
@@ -82,7 +79,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       _startAutoSlide();
     } catch (e) {
       if (!mounted) return;
-      // API 실패 시 샘플 데이터로 폴백
       allNotices = sampleNotices;
       setState(() { _notices = sampleNotices; _isLoading = false; _error = '서버에 연결할 수 없어 샘플 데이터를 표시합니다.'; });
       _startAutoSlide();
@@ -113,64 +109,118 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A5F),
-        elevation: 0,
-        title: const Text('호서대학교 공지사항',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-          ),
+      body: Column(
+        children: [
+          _buildPageHeader(),
+          if (_error != null) _buildErrorBanner(),
+          if (_isLoading)
+            const Expanded(child: Center(child: CircularProgressIndicator(color: Color(0xFF1E3A5F))))
+          else ...[
+            _buildBanner(),
+            _buildCategoryTabs(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _loadNotices,
+                color: const Color(0xFF1E3A5F),
+                child: _buildNoticeList(),
+              ),
+            ),
+          ],
         ],
       ),
-      body: _isLoading ? _buildLoading() : _buildBody(),
     );
   }
 
-  Widget _buildLoading() {
+  Widget _buildPageHeader() {
     return Container(
-      color: const Color(0xFF1E3A5F),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Colors.white),
-            SizedBox(height: 20),
-            Text('공지사항을 불러오는 중...', style: TextStyle(color: Colors.white70, fontSize: 14)),
-          ],
+      color: Colors.white,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Row(
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('오늘의 학교 소식',
+                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.w500)),
+                  SizedBox(height: 2),
+                  Text('공지사항',
+                      style: TextStyle(color: Color(0xFF111827), fontSize: 22, fontWeight: FontWeight.w800)),
+                ],
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pushNamed('/settings'),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(color: Color(0xFFF0F4F8), shape: BoxShape.circle),
+                  child: const Icon(Icons.settings_outlined, color: Color(0xFF6B7280), size: 20),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
-    return Column(
-      children: [
-        if (_error != null)
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFFEF3C7),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
-                const SizedBox(width: 6),
-                Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
-              ],
+  Widget _buildErrorBanner() {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFFEF3C7),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
+          const SizedBox(width: 6),
+          Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBanner() {
+    final banners = _bannerNotices;
+    if (banners.isEmpty) return const SizedBox.shrink();
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 150,
+              child: PageView.builder(
+                controller: _pageController,
+                padEnds: false,
+                itemCount: banners.length,
+                onPageChanged: (i) => setState(() => _bannerIndex = i),
+                itemBuilder: (_, i) => _buildBannerCard(banners[i]),
+              ),
             ),
           ),
-        _buildBanner(),
-        _buildCategoryTabs(),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _loadNotices,
-            color: const Color(0xFF1E3A5F),
-            child: _buildNoticeList(),
-          ),
-        ),
-      ],
+          if (banners.length > 1) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(banners.length, (i) => AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _bannerIndex ? 20 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: i == _bannerIndex ? const Color(0xFF1E3A5F) : const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              )),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -200,48 +250,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     }
   }
 
-  Widget _buildBanner() {
-    final banners = _bannerNotices;
-    if (banners.isEmpty) return const SizedBox.shrink();
-    return Container(
-      color: const Color(0xFF1E3A5F),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: SizedBox(
-              height: 150,
-              child: PageView.builder(
-                controller: _pageController,
-                padEnds: false,
-                itemCount: banners.length,
-                onPageChanged: (i) => setState(() => _bannerIndex = i),
-                itemBuilder: (_, i) => _buildBannerCard(banners[i]),
-              ),
-            ),
-          ),
-          if (banners.length > 1) ...[
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(banners.length, (i) => AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: i == _bannerIndex ? 20 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: i == _bannerIndex ? Colors.white : Colors.white38,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              )),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildBannerCard(Notice notice) {
     final gradients = _bannerGradient(notice.category);
     final icon = _bannerIcon(notice.category);
@@ -255,13 +263,6 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: gradients[0].withValues(alpha: 0.5),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         padding: const EdgeInsets.all(18),
         child: Stack(
@@ -309,12 +310,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                   notice.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold, height: 1.4),
                 ),
                 const Spacer(),
                 Row(
@@ -322,11 +318,9 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                     const Icon(Icons.person_outline, size: 12, color: Colors.white60),
                     const SizedBox(width: 4),
                     Expanded(
-                      child: Text(
-                        notice.department,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
+                      child: Text(notice.department,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white70, fontSize: 12)),
                     ),
                     const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.white60),
                   ],
@@ -342,7 +336,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   Widget _buildCategoryTabs() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.only(bottom: 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -400,12 +394,13 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
 
   Widget _buildNoticeItem(Notice notice) {
     final color = Notice.categoryColor(notice.category);
+    final dotColor = notice.isPinned ? const Color(0xFF059669) : color;
     return GestureDetector(
       onTap: () => _openDetail(notice),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: notice.isPinned ? const Color(0xFFF0FDF4) : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -415,41 +410,37 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(notice.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827), height: 1.4)),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
-                      if (notice.isPinned) ...[
-                        const Icon(Icons.push_pin, size: 13, color: Color(0xFF059669)),
-                        const SizedBox(width: 4),
-                      ],
-                      Expanded(
-                        child: Text(notice.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827), height: 1.4)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(Icons.person_outline, size: 12, color: Color(0xFFB0B8C1)),
-                      const SizedBox(width: 3),
                       Flexible(
                         child: Text(notice.department,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
                       ),
                       if (notice.date.isNotEmpty) ...[
-                        const SizedBox(width: 10),
-                        const Icon(Icons.calendar_today_outlined, size: 11, color: Color(0xFFB0B8C1)),
-                        const SizedBox(width: 3),
+                        const Text(' · ', style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB))),
                         Text(notice.date,
                             style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
                       ],

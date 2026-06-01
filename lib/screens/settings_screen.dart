@@ -53,10 +53,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A5F),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF111827),
         elevation: 0,
-        title: const Text('설정', style: TextStyle(fontWeight: FontWeight.bold)),
+        surfaceTintColor: Colors.white,
+        title: const Text('설정',
+            style: TextStyle(color: Color(0xFF111827), fontSize: 20, fontWeight: FontWeight.w800)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF374151)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.only(top: 24, bottom: 40),

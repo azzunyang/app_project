@@ -50,44 +50,58 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A5F),
-        elevation: 0,
-        toolbarHeight: 56,
-        titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20)),
-            child: TextField(
-              controller: _controller,
-              autofocus: true,
-              textAlignVertical: TextAlignVertical.center,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                hintText: '공지사항 검색...',
-                hintStyle: TextStyle(color: Colors.white54),
-                prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              onChanged: _onChanged,
-              onSubmitted: (q) { if (q.trim().isNotEmpty) _search(q.trim()); },
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-          ),
+      body: Column(
+        children: [
+          _buildPageHeader(),
+          Expanded(child: _buildBody()),
         ],
       ),
-      body: _buildBody(),
+    );
+  }
+
+  Widget _buildPageHeader() {
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('공지사항 검색',
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              const Text('검색',
+                  style: TextStyle(color: Color(0xFF111827), fontSize: 22, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 14),
+              Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F4F8),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: _controller,
+                  autofocus: false,
+                  textAlignVertical: TextAlignVertical.center,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF111827)),
+                  decoration: const InputDecoration(
+                    hintText: '제목, 담당 부서로 검색...',
+                    hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    prefixIcon: Icon(Icons.search, color: Color(0xFF9CA3AF), size: 20),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: _onChanged,
+                  onSubmitted: (q) { if (q.trim().isNotEmpty) _search(q.trim()); },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -100,10 +114,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0F2F7),
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFF0F2F7), shape: BoxShape.circle),
               child: const Icon(Icons.search, size: 40, color: Color(0xFFD1D5DB)),
             ),
             const SizedBox(height: 16),
@@ -127,10 +138,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0F2F7),
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFF0F2F7), shape: BoxShape.circle),
               child: const Icon(Icons.search_off, size: 40, color: Color(0xFFD1D5DB)),
             ),
             const SizedBox(height: 16),
@@ -143,10 +151,24 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-      itemCount: _results.length,
-      itemBuilder: (_, i) => _buildItem(_results[i]),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+          child: Text(
+            '검색 결과 ${_results.length}건',
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            itemCount: _results.length,
+            itemBuilder: (_, i) => _buildItem(_results[i]),
+          ),
+        ),
+      ],
     );
   }
 
@@ -161,33 +183,35 @@ class _SearchScreenState extends State<SearchScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 _highlightText(notice.title, _lastQuery),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 12, color: Color(0xFFB0B8C1)),
-                    const SizedBox(width: 3),
                     Flexible(
                       child: Text(notice.department,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
                     ),
                     if (notice.date.isNotEmpty) ...[
-                      const SizedBox(width: 10),
-                      const Icon(Icons.calendar_today_outlined, size: 11, color: Color(0xFFB0B8C1)),
-                      const SizedBox(width: 3),
+                      const Text(' · ', style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB))),
                       Text(notice.date,
                           style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
                     ],
@@ -212,20 +236,23 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _highlightText(String text, String query) {
     if (query.isEmpty) {
-      return Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
+      return Text(text,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
     }
     final lower = text.toLowerCase();
     final q = query.toLowerCase();
     final idx = lower.indexOf(q);
     if (idx == -1) {
-      return Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
+      return Text(text,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)));
     }
     return RichText(
       text: TextSpan(
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
         children: [
           TextSpan(text: text.substring(0, idx)),
-          TextSpan(text: text.substring(idx, idx + query.length),
+          TextSpan(
+              text: text.substring(idx, idx + query.length),
               style: const TextStyle(color: Color(0xFF1E3A5F), backgroundColor: Color(0xFFDBEAFE))),
           TextSpan(text: text.substring(idx + query.length)),
         ],

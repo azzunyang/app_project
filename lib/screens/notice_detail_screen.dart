@@ -109,15 +109,19 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A5F),
-        foregroundColor: Colors.white,
-        title: const Text('공지사항', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF111827),
         elevation: 0,
+        surfaceTintColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF374151)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
             icon: Icon(
-              _isFavorite ? Icons.star : Icons.star_border,
-              color: _isFavorite ? const Color(0xFFF59E0B) : Colors.white,
+              _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+              color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF9CA3AF),
             ),
             onPressed: () {
               setState(() => _isFavorite = !_isFavorite);
@@ -146,53 +150,48 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
   Widget _buildHeader(Color color) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1E3A5F), Color(0xFF152D4A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: color,
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               widget.notice.category,
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(height: 14),
           Text(
             widget.notice.title,
             style: const TextStyle(
-              color: Colors.white,
+              color: Color(0xFF111827),
               fontSize: 20,
               fontWeight: FontWeight.bold,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.person_outline, color: Colors.white54, size: 14),
+              const Icon(Icons.person_outline, color: Color(0xFF9CA3AF), size: 14),
               const SizedBox(width: 4),
-              Text(widget.notice.department,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              Flexible(
+                child: Text(widget.notice.department,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+              ),
               if (widget.notice.date.isNotEmpty) ...[
-                const SizedBox(width: 20),
-                const Icon(Icons.calendar_today_outlined,
-                    color: Colors.white54, size: 14),
+                const Text(' · ', style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 13)),
+                const Icon(Icons.calendar_today_outlined, color: Color(0xFF9CA3AF), size: 13),
                 const SizedBox(width: 4),
                 Text(widget.notice.date,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
               ],
             ],
           ),
@@ -660,26 +659,16 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
   }
 
   Widget _buildOriginalButton() {
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: GestureDetector(
         onTap: () => _openUrl(widget.notice.detailUrl!),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E3A5F), Color(0xFF152D4A)],
-            ),
+            color: const Color(0xFF1E3A5F),
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1E3A5F).withValues(alpha: 0.35),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -687,10 +676,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
               Icon(Icons.open_in_browser_rounded, color: Colors.white, size: 20),
               SizedBox(width: 8),
               Text('원문 보기',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15)),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
             ],
           ),
         ),

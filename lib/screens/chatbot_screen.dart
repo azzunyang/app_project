@@ -4,9 +4,8 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime time;
-  final List<String>? suggestions;
 
-  ChatMessage({required this.text, required this.isUser, required this.time, this.suggestions});
+  ChatMessage({required this.text, required this.isUser, required this.time});
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -24,7 +23,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       text: '안녕하세요! 호서대학교 공지사항 도우미입니다 😊\n궁금한 것이 있으면 편하게 물어보세요!',
       isUser: false,
       time: DateTime.now(),
-      suggestions: ['장학금 안내', '수강신청', '취업 정보', '사회봉사'],
     ),
   ];
   bool _isTyping = false;
@@ -38,6 +36,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     '교양': '영역별 교양 강의는 [영역별교양] 카테고리에서 확인하실 수 있습니다.\n인문, 사회, 자연, 예술 등 다양한 강의가 개설되어 있습니다.',
     '창업': '창업 관련 공지는 [외부] 카테고리에서 확인하세요.\n교내 창업경진대회 참가자 모집 중입니다!',
   };
+
+  static const List<Map<String, dynamic>> _quickChips = [
+    {'icon': Icons.school_outlined, 'label': '장학금 안내'},
+    {'icon': Icons.calendar_month_outlined, 'label': '수강신청'},
+    {'icon': Icons.business_center_outlined, 'label': '취업 정보'},
+    {'icon': Icons.volunteer_activism_outlined, 'label': '사회봉사'},
+  ];
 
   @override
   void dispose() {
@@ -90,40 +95,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A5F),
-        elevation: 0,
-        toolbarHeight: 56,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 18),
-            ),
-            const SizedBox(width: 10),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('호서 도우미', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('질문하면 답해드려요', style: TextStyle(color: Colors.white70, fontSize: 11)),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-          ),
-        ],
-      ),
       body: Column(
         children: [
+          _buildPageHeader(),
+          _buildQuickChipBar(),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -143,97 +118,134 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
-  static const Map<String, IconData> _chipIcons = {
-    '장학금 안내': Icons.school_outlined,
-    '수강신청': Icons.calendar_month_outlined,
-    '취업 정보': Icons.business_center_outlined,
-    '사회봉사': Icons.volunteer_activism_outlined,
-  };
+  Widget _buildPageHeader() {
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
+                child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('호서 도우미',
+                      style: TextStyle(color: Color(0xFF111827), fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 2),
+                  Row(
+                    children: [
+                      CircleAvatar(radius: 4, backgroundColor: Color(0xFF22C55E)),
+                      SizedBox(width: 4),
+                      Text('온라인',
+                          style: TextStyle(color: Color(0xFF22C55E), fontSize: 11, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pushNamed('/settings'),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(color: Color(0xFFF0F4F8), shape: BoxShape.circle),
+                  child: const Icon(Icons.settings_outlined, color: Color(0xFF6B7280), size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickChipBar() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: _quickChips.map((chip) {
+            return GestureDetector(
+              onTap: () {
+                _controller.text = chip['label'] as String;
+                _send();
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F4F8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(chip['icon'] as IconData, size: 14, color: const Color(0xFF1E3A5F)),
+                    const SizedBox(width: 6),
+                    Text(chip['label'] as String,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF374151))),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
 
   Widget _buildBubble(ChatMessage msg) {
     final isUser = msg.isUser;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (!isUser) ...[
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
-                  child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
-                ),
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isUser ? const Color(0xFF1E3A5F) : Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isUser ? 18 : 4),
-                      bottomRight: Radius.circular(isUser ? 4 : 18),
-                    ),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                  child: Text(
-                    msg.text,
-                    style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
-                  ),
-                ),
-              ),
-              if (isUser) const SizedBox(width: 4),
-            ],
-          ),
-          if (!isUser && msg.suggestions != null) ...[
-            const SizedBox(height: 10),
-            _buildSuggestionGrid(msg.suggestions!),
+          if (!isUser) ...[
+            Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
+              child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
+            ),
+            const SizedBox(width: 8),
           ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isUser ? const Color(0xFF1E3A5F) : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 18),
+                ),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+                ],
+              ),
+              child: Text(
+                msg.text,
+                style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
+              ),
+            ),
+          ),
+          if (isUser) const SizedBox(width: 4),
         ],
       ),
-    );
-  }
-
-  Widget _buildSuggestionGrid(List<String> suggestions) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: suggestions.map((chip) {
-        final icon = _chipIcons[chip] ?? Icons.help_outline;
-        return GestureDetector(
-          onTap: () {
-            _controller.text = chip;
-            _send();
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 5, offset: const Offset(0, 2)),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 15, color: const Color(0xFF1E3A5F)),
-                const SizedBox(width: 6),
-                Text(chip, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF1F2937))),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 
