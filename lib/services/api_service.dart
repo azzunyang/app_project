@@ -7,6 +7,7 @@ class ApiService {
   static const _listAction = 'MAPP_1708240139';
   static const _categoryCode = 'CTG_17082400011';
   static const _volunteerCategoryCode = 'CTG_17082400014';
+  static const _externalCategoryCode  = 'CTG_20012200070';
   static const _headers = {
     'User-Agent':
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
@@ -17,11 +18,13 @@ class ApiService {
   };
 
   static Future<List<Notice>> fetchAll({int pages = 4}) async {
-    // 일반 공지 4페이지 + 사회봉사 전용 게시판 2페이지 병렬 실행
+    // 일반 공지 4페이지 + 사회봉사·외부 전용 게시판 병렬 실행
     final futures = [
       ...List.generate(pages, (i) => _fetchPage(i + 1, _categoryCode)),
       _fetchPage(1, _volunteerCategoryCode),
       _fetchPage(2, _volunteerCategoryCode),
+      _fetchPage(1, _externalCategoryCode),
+      _fetchPage(2, _externalCategoryCode),
     ];
     final results = await Future.wait(futures);
     final all = results.expand((list) => list).toList();
@@ -53,6 +56,7 @@ class ApiService {
   static List<Notice> _parseList(String html, {String categoryCode = _categoryCode}) {
     final notices = <Notice>[];
     final isVolunteer = categoryCode == _volunteerCategoryCode;
+    final isExternal  = categoryCode == _externalCategoryCode;
     // <tr> 블록 단위로 분리
     final blocks = html.split(RegExp(r'<tr[\s>]'));
     for (final block in blocks) {
@@ -79,7 +83,9 @@ class ApiService {
         title:      title,
         department: dept,
         date:       date,
-        category:   isVolunteer ? '사회봉사' : Notice.inferCategory(dept, title),
+        category:   isVolunteer ? '사회봉사'
+                  : isExternal  ? '외부'
+                  : Notice.inferCategory(dept, title),
         detailUrl:  detailUrl,
       ));
     }
