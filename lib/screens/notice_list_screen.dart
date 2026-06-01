@@ -146,38 +146,31 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   }
 
   Widget _buildBody() {
-    return RefreshIndicator(
-      onRefresh: _loadNotices,
-      color: const Color(0xFF0F1E3D),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
+    return Column(
+      children: [
+        if (_error != null)
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFFEF3C7),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
-                if (_error != null)
-                  Container(
-                    width: double.infinity,
-                    color: const Color(0xFFFEF3C7),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
-                      ],
-                    ),
-                  ),
-                _buildBanner(),
-                _buildCategoryTabs(),
+                const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
+                const SizedBox(width: 6),
+                Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
               ],
             ),
           ),
-          SliverFillRemaining(
-            hasScrollBody: true,
+        _buildBanner(),
+        _buildCategoryTabs(),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadNotices,
+            color: const Color(0xFF0F1E3D),
             child: _buildNoticeList(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

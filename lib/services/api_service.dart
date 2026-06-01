@@ -8,6 +8,9 @@ class ApiService {
   static const _categoryCode = 'CTG_17082400011';
   static const _volunteerCategoryCode = 'CTG_17082400014';
   static const _externalCategoryCode  = 'CTG_20012200070';
+  static const _academicCategoryCode  = 'CTG_17082400012';
+  static const _scholarCategoryCode   = 'CTG_17082400013';
+  static const _jobCategoryCode       = 'CTG_20120400086';
   static const _headers = {
     'User-Agent':
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
@@ -18,13 +21,19 @@ class ApiService {
   };
 
   static Future<List<Notice>> fetchAll({int pages = 4}) async {
-    // 일반 공지 4페이지 + 사회봉사·외부 전용 게시판 병렬 실행
+    // 일반 공지 4페이지 + 각 카테고리 전용 게시판 1~2페이지 병렬 실행
     final futures = [
       ...List.generate(pages, (i) => _fetchPage(i + 1, _categoryCode)),
       _fetchPage(1, _volunteerCategoryCode),
       _fetchPage(2, _volunteerCategoryCode),
       _fetchPage(1, _externalCategoryCode),
       _fetchPage(2, _externalCategoryCode),
+      _fetchPage(1, _academicCategoryCode),
+      _fetchPage(2, _academicCategoryCode),
+      _fetchPage(1, _scholarCategoryCode),
+      _fetchPage(2, _scholarCategoryCode),
+      _fetchPage(1, _jobCategoryCode),
+      _fetchPage(2, _jobCategoryCode),
     ];
     final results = await Future.wait(futures);
     final all = results.expand((list) => list).toList();
@@ -57,6 +66,9 @@ class ApiService {
     final notices = <Notice>[];
     final isVolunteer = categoryCode == _volunteerCategoryCode;
     final isExternal  = categoryCode == _externalCategoryCode;
+    final isAcademic  = categoryCode == _academicCategoryCode;
+    final isScholar   = categoryCode == _scholarCategoryCode;
+    final isJob       = categoryCode == _jobCategoryCode;
     // <tr> 블록 단위로 분리
     final blocks = html.split(RegExp(r'<tr[\s>]'));
     for (final block in blocks) {
@@ -85,6 +97,9 @@ class ApiService {
         date:       date,
         category:   isVolunteer ? '사회봉사'
                   : isExternal  ? '외부'
+                  : isAcademic  ? '학사'
+                  : isScholar   ? '장학'
+                  : isJob       ? '취업'
                   : Notice.inferCategory(dept, title),
         detailUrl:  detailUrl,
       ));
