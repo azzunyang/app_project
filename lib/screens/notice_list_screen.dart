@@ -112,9 +112,9 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFF1F8F1),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F1E3D),
+        backgroundColor: const Color(0xFF2E7D32),
         elevation: 0,
         title: const Text('호서대학교 공지사항',
             style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
@@ -131,7 +131,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
 
   Widget _buildLoading() {
     return Container(
-      color: const Color(0xFF0F1E3D),
+      color: const Color(0xFF2E7D32),
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -166,7 +166,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadNotices,
-            color: const Color(0xFF0F1E3D),
+            color: const Color(0xFF2E7D32),
             child: _buildNoticeList(),
           ),
         ),
@@ -183,7 +183,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       case '사회봉사': return [const Color(0xFF9D174D), const Color(0xFFF472B6)];
       case '교양': return [const Color(0xFF0E7490), const Color(0xFF22D3EE)];
       case '기타': return [const Color(0xFF4338CA), const Color(0xFF818CF8)];
-      default: return [const Color(0xFF0F1E3D), const Color(0xFF3B82F6)];
+      default: return [const Color(0xFF2E7D32), const Color(0xFF66BB6A)];
     }
   }
 
@@ -204,7 +204,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     final banners = _bannerNotices;
     if (banners.isEmpty) return const SizedBox.shrink();
     return Container(
-      color: const Color(0xFF0F1E3D),
+      color: const Color(0xFF2E7D32),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Column(
         children: [
@@ -356,10 +356,10 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF0F1E3D) : Colors.transparent,
+                  color: isSelected ? const Color(0xFF2E7D32) : Colors.transparent,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF0F1E3D) : const Color(0xFFD1D5DB),
+                    color: isSelected ? const Color(0xFF2E7D32) : const Color(0xFFD1D5DB),
                   ),
                 ),
                 child: Text(cat,

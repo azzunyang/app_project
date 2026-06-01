@@ -49,9 +49,9 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFF1F8F1),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F1E3D),
+        backgroundColor: const Color(0xFF2E7D32),
         elevation: 0,
         toolbarHeight: 56,
         titleSpacing: 0,
@@ -117,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
       );
     }
     if (_isSearching) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF0F1E3D)));
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)));
     }
     if (_results.isEmpty) {
       return Padding(
@@ -226,7 +226,7 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           TextSpan(text: text.substring(0, idx)),
           TextSpan(text: text.substring(idx, idx + query.length),
-              style: const TextStyle(color: Color(0xFF0F1E3D), backgroundColor: Color(0xFFDBEAFE))),
+              style: const TextStyle(color: Color(0xFF2E7D32), backgroundColor: Color(0xFFE8F5E9))),
           TextSpan(text: text.substring(idx + query.length)),
         ],
       ),

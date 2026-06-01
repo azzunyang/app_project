@@ -51,9 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFF1F8F1),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F1E3D),
+        backgroundColor: const Color(0xFF2E7D32),
         foregroundColor: Colors.white,
         elevation: 0,
         title: const Text('설정', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -181,8 +181,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: const Color(0xFF0F1E3D),
-                activeTrackColor: const Color(0xFF93C5FD),
+                activeThumbColor: const Color(0xFF2E7D32),
+                activeTrackColor: const Color(0xFFA5D6A7),
               ),
             ],
           ),
@@ -258,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onConfirm();
               Navigator.pop(context);
             },
-            child: const Text('확인', style: TextStyle(color: Color(0xFF0F1E3D))),
+            child: const Text('확인', style: TextStyle(color: Color(0xFF2E7D32))),
           ),
         ],
       ),
