@@ -95,6 +95,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       if (!mounted) return;
       final banners = _bannerNotices;
       if (banners.length <= 1) return;
+      if (!_pageController.hasClients) return;
       final next = (_bannerIndex + 1) % banners.length;
       _pageController.animateToPage(next,
           duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
