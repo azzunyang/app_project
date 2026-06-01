@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A3D1A), Color(0xFF2E7D32), Color(0xFF1B5E20)],
+            colors: [Color(0xFF0D1F35), Color(0xFF1E3A5F), Color(0xFF152D4A)],
           ),
         ),
         child: SafeArea(

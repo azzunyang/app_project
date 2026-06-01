@@ -89,9 +89,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8F1),
+      backgroundColor: const Color(0xFFF0F4F8),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: const Color(0xFF1E3A5F),
         elevation: 0,
         toolbarHeight: 56,
         title: Row(
@@ -165,7 +165,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 Container(
                   width: 30,
                   height: 30,
-                  decoration: const BoxDecoration(color: Color(0xFF2E7D32), shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
                   child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
                 ),
                 const SizedBox(width: 8),
@@ -174,7 +174,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isUser ? const Color(0xFF2E7D32) : Colors.white,
+                    color: isUser ? const Color(0xFF1E3A5F) : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -226,7 +226,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 15, color: const Color(0xFF2E7D32)),
+                Icon(icon, size: 15, color: const Color(0xFF1E3A5F)),
                 const SizedBox(width: 6),
                 Text(chip, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF1F2937))),
               ],
@@ -245,7 +245,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           Container(
             width: 30,
             height: 30,
-            decoration: const BoxDecoration(color: Color(0xFF2E7D32), shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
             child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 8),
@@ -277,7 +277,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F8F1),
+                color: const Color(0xFFF0F4F8),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: TextField(
@@ -300,7 +300,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(color: Color(0xFF2E7D32), shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
               child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),

@@ -51,11 +51,11 @@ class HoseoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32),
+          seedColor: const Color(0xFF1E3A5F),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF1F8F1),
+        scaffoldBackgroundColor: const Color(0xFFF0F4F8),
       ),
       initialRoute: '/',
       routes: {
