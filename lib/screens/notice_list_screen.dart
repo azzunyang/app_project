@@ -149,24 +149,33 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
     return RefreshIndicator(
       onRefresh: _loadNotices,
       color: const Color(0xFF0F1E3D),
-      child: Column(
-        children: [
-          if (_error != null)
-            Container(
-              width: double.infinity,
-              color: const Color(0xFFFEF3C7),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
-                ],
-              ),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                if (_error != null)
+                  Container(
+                    width: double.infinity,
+                    color: const Color(0xFFFEF3C7),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.wifi_off, size: 14, color: Color(0xFF92400E)),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(_error!, style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)))),
+                      ],
+                    ),
+                  ),
+                _buildBanner(),
+                _buildCategoryTabs(),
+              ],
             ),
-          _buildBanner(),
-          _buildCategoryTabs(),
-          Expanded(child: _buildNoticeList()),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: _buildNoticeList(),
+          ),
         ],
       ),
     );
