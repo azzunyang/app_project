@@ -126,6 +126,19 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
             onPressed: () {
               setState(() => _isFavorite = !_isFavorite);
               toggleFavorite(widget.notice);
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isFavorite ? '즐겨찾기에 추가됐습니다.' : '즐겨찾기에서 제거됐습니다.',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                ),
+              );
             },
           ),
         ],

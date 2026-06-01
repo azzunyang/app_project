@@ -92,8 +92,25 @@ class FavoritesScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
           children: [
-            const Icon(Icons.star, color: Color(0xFFF59E0B), size: 18),
-            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: () {
+                toggleFavorite(notice);
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('즐겨찾기에서 제거됐습니다.', style: TextStyle(fontSize: 14)),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  ),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 10),
+                child: Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 22),
+              ),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
