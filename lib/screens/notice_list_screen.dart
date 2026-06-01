@@ -26,11 +26,11 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
   bool _isLoading = true;
   String? _error;
 
-  final List<String> _categories = ['전체', '학사', '장학', '취업', '외부', '사회봉사', '교양'];
+  final List<String> _categories = ['전체', '학사', '장학', '취업', '외부', '사회봉사', '교양', '기타'];
 
   // 각 카테고리의 최신 공지 1개씩
   List<Notice> get _bannerNotices {
-    const cats = ['학사', '장학', '취업', '외부', '사회봉사', '교양'];
+    const cats = ['학사', '장학', '취업', '외부', '사회봉사', '교양', '기타'];
     final result = <Notice>[];
     for (final cat in cats) {
       final list = _notices.where((n) => n.category == cat).toList();
@@ -182,6 +182,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       case '외부': return [const Color(0xFF92400E), const Color(0xFFF59E0B)];
       case '사회봉사': return [const Color(0xFF9D174D), const Color(0xFFF472B6)];
       case '교양': return [const Color(0xFF0E7490), const Color(0xFF22D3EE)];
+      case '기타': return [const Color(0xFF4338CA), const Color(0xFF818CF8)];
       default: return [const Color(0xFF0F1E3D), const Color(0xFF3B82F6)];
     }
   }
@@ -194,6 +195,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       case '외부': return Icons.public_outlined;
       case '사회봉사': return Icons.volunteer_activism_outlined;
       case '교양': return Icons.menu_book_outlined;
+      case '기타': return Icons.info_outline_rounded;
       default: return Icons.campaign_outlined;
     }
   }

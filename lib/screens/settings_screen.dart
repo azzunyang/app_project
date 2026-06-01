@@ -19,6 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     '외부': false,
     '사회봉사': false,
     '영역별교양': false,
+    '기타': false,
   };
 
   @override

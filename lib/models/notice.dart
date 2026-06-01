@@ -58,7 +58,7 @@ class Notice {
         t.contains('교양')) { return '교양'; }
     if (w.contains('학사') || w.contains('교무') || w.contains('학술') ||
         w.contains('에듀')) { return '학사'; }
-    return '외부';
+    return '기타';
   }
 
   static Color categoryColor(String category) {
@@ -71,6 +71,8 @@ class Notice {
         return const Color(0xFF0D9488);
       case '외부':
         return const Color(0xFFEA580C);
+      case '기타':
+        return const Color(0xFF6366F1);
       case '사회봉사':
         return const Color(0xFFE11D48);
       case '교양':
