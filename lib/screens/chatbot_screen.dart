@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import '../services/chatbot_service.dart';
+import '../models/notice.dart';
+import '../widgets/link_text.dart';
+import 'notice_detail_screen.dart';
 
 class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime time;
+  final List<Map<String, dynamic>> references;
 
-  ChatMessage({required this.text, required this.isUser, required this.time});
+  ChatMessage({
+    required this.text,
+    required this.isUser,
+    required this.time,
+    this.references = const [],
+  });
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -27,15 +37,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   ];
   bool _isTyping = false;
 
-  static const Map<String, String> _responses = {
-    '장학': '장학금 관련 공지는 [장학] 카테고리에서 확인하실 수 있습니다.\n현재 국가장학금 2차 신청 마감이 임박해 있습니다. 한국장학재단(www.kosaf.go.kr)에서 신청하세요!',
-    '수강': '수강신청은 포털 → 학사 → 수강신청 메뉴에서 하실 수 있습니다.\n수강 정정 기간도 놓치지 마세요!',
-    '취업': '취업 관련 공지는 [취업] 카테고리에서 확인하세요.\n교내 취업 취망자 신청, 하계 인턴십 등 다양한 취업 지원 프로그램이 있습니다.',
-    '성적': '성적 이의신청은 [학사] 카테고리에서 공지를 확인하시고, 해당 교수님께 직접 문의하시면 됩니다.',
-    '봉사': '사회봉사 활동은 [사회봉사] 카테고리에서 확인하세요.\n30시간 이상 활동 시 1학점이 인정됩니다!',
-    '교양': '영역별 교양 강의는 [영역별교양] 카테고리에서 확인하실 수 있습니다.\n인문, 사회, 자연, 예술 등 다양한 강의가 개설되어 있습니다.',
-    '창업': '창업 관련 공지는 [외부] 카테고리에서 확인하세요.\n교내 창업경진대회 참가자 모집 중입니다!',
-  };
 
   static const List<Map<String, dynamic>> _quickChips = [
     {'icon': Icons.school_outlined, 'label': '장학금 안내'},
@@ -51,7 +52,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     super.dispose();
   }
 
-  void _send() {
+  Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _controller.clear();
@@ -62,21 +63,30 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
     _scrollToBottom();
 
-    Future.delayed(const Duration(milliseconds: 800), () {
+    try {
+      final result = await ChatbotService.chat(text);
       if (!mounted) return;
       setState(() {
         _isTyping = false;
-        _messages.add(ChatMessage(text: _getResponse(text), isUser: false, time: DateTime.now()));
+        _messages.add(ChatMessage(
+          text: result.answer,
+          isUser: false,
+          time: DateTime.now(),
+          references: result.references,
+        ));
       });
-      _scrollToBottom();
-    });
-  }
-
-  String _getResponse(String input) {
-    for (final entry in _responses.entries) {
-      if (input.contains(entry.key)) return entry.value;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isTyping = false;
+        _messages.add(ChatMessage(
+          text: '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          isUser: false,
+          time: DateTime.now(),
+        ));
+      });
     }
-    return '죄송해요, 해당 내용은 아직 제가 답변하기 어렵습니다 😅\n공지사항 목록에서 직접 검색해 보시거나, 학교 포털(portal.hoseo.ac.kr)을 이용해 주세요!';
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
@@ -209,42 +219,135 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     final isUser = msg.isUser;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            Container(
-              width: 30,
-              height: 30,
-              decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
-              child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isUser ? const Color(0xFF1E3A5F) : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(isUser ? 18 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 18),
+          Row(
+            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isUser) ...[
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: const BoxDecoration(color: Color(0xFF1E3A5F), shape: BoxShape.circle),
+                  child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
                 ),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isUser ? const Color(0xFF1E3A5F) : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isUser ? 18 : 4),
+                      bottomRight: Radius.circular(isUser ? 4 : 18),
+                    ),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: LinkText(
+                    msg.text,
+                    style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
+                  ),
+                ),
+              ),
+              if (isUser) const SizedBox(width: 4),
+            ],
+          ),
+          if (!isUser && msg.references.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 38),
+              child: Column(
+                children: msg.references
+                    .map((ref) => _buildNoticeCard(ref))
+                    .toList(),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoticeCard(Map<String, dynamic> ref) {
+    final articleId = ref['article_id']?.toString() ?? '';
+    final detailUrl = ref['detail_url'] as String? ??
+        (articleId.isNotEmpty
+            ? 'https://www.hoseo.ac.kr/Home/BBSView.mbz'
+                '?action=MAPP_1708240139'
+                '&schIdx=$articleId'
+                '&schCategorycode=CTG_17082400011'
+                '&schKeytype=subject&schKeyword=&pageIndex=1'
+            : null);
+    final notice = Notice(
+      id: articleId,
+      articleId: int.tryParse(articleId),
+      title: ref['title'] as String? ?? '',
+      department: ref['writer'] as String? ?? '',
+      date: ref['date'] as String? ?? '',
+      category: ref['category'] as String? ?? '공지사항',
+      content: ref['content'] as String?,
+      detailUrl: detailUrl,
+    );
+    final color = Notice.categoryColor(notice.category);
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => NoticeDetailScreen(notice: notice)),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 36,
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(notice.category,
+                        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    notice.title,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF111827), fontWeight: FontWeight.w500, height: 1.3),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
-              child: Text(
-                msg.text,
-                style: TextStyle(fontSize: 14, height: 1.5, color: isUser ? Colors.white : const Color(0xFF1F2937)),
-              ),
             ),
-          ),
-          if (isUser) const SizedBox(width: 4),
-        ],
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right_rounded, size: 18, color: Color(0xFF9CA3AF)),
+          ],
+        ),
       ),
     );
   }
@@ -301,14 +404,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                onSubmitted: (_) => _send(),
+                onSubmitted: (_) async => _send(),
                 maxLines: null,
               ),
             ),
           ),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: _send,
+            onTap: () => _send(),
             child: Container(
               width: 44,
               height: 44,

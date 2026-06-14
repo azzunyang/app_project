@@ -79,9 +79,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       _startAutoSlide();
     } catch (e) {
       if (!mounted) return;
-      allNotices = sampleNotices;
-      setState(() { _notices = sampleNotices; _isLoading = false; _error = '서버에 연결할 수 없어 샘플 데이터를 표시합니다.'; });
-      _startAutoSlide();
+      setState(() { _isLoading = false; _error = '공지사항을 불러오지 못했습니다. 네트워크를 확인해 주세요.'; });
     }
   }
 
@@ -112,10 +110,12 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       body: Column(
         children: [
           _buildPageHeader(),
-          if (_error != null) _buildErrorBanner(),
           if (_isLoading)
             const Expanded(child: Center(child: CircularProgressIndicator(color: Color(0xFF1E3A5F))))
+          else if (_error != null && _notices.isEmpty)
+            Expanded(child: _buildErrorState())
           else ...[
+            if (_error != null) _buildErrorBanner(),
             _buildBanner(),
             _buildCategoryTabs(),
             Expanded(
@@ -162,6 +162,44 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(color: Color(0xFFF0F2F7), shape: BoxShape.circle),
+              child: const Icon(Icons.wifi_off_rounded, size: 40, color: Color(0xFFD1D5DB)),
+            ),
+            const SizedBox(height: 20),
+            const Text('공지사항을 불러오지 못했습니다.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+            const SizedBox(height: 8),
+            const Text('네트워크 연결을 확인하고 다시 시도해 주세요.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF), height: 1.5)),
+            const SizedBox(height: 28),
+            GestureDetector(
+              onTap: _loadNotices,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A5F),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('다시 시도', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../models/notice.dart';
 import '../data/sample_data.dart';
+import '../widgets/link_text.dart';
 
 class NoticeDetailScreen extends StatefulWidget {
   final Notice notice;
@@ -24,6 +25,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
   late bool _isFavorite;
   List<String> _imageUrls = [];
   List<_Attachment> _attachments = [];
+  String? _fetchedContent;
   bool _loadingImages = false;
 
   @override
@@ -80,6 +82,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
         setState(() {
           _imageUrls = urls;
           _attachments = attachments;
+          _fetchedContent = _parseTextContent(html);
           _loadingImages = false;
         });
       } else {
@@ -88,6 +91,30 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
     } catch (_) {
       if (mounted) setState(() => _loadingImages = false);
     }
+  }
+
+  String? _parseTextContent(String html) {
+    // 호서대 공지 본문은 <dt class="no-print">내용</dt><dd>...</dd> 구조
+    final m = RegExp(
+      r'<dt[^>]*class="[^"]*no-print[^"]*"[^>]*>\s*내용\s*</dt>\s*<dd>(.*?)</dd>',
+      dotAll: true,
+      caseSensitive: false,
+    ).firstMatch(html);
+    if (m == null) return null;
+    final text = m.group(1)!
+        .replaceAll(RegExp(r'<img[^>]*>', caseSensitive: false), '')
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<p[^>]*>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+    return text.isEmpty ? null : text;
   }
 
   Future<void> _openUrl(String url) async {
@@ -228,7 +255,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
                   strokeWidth: 2, color: Color(0xFF1E3A5F)),
             ),
             SizedBox(width: 10),
-            Text('이미지 불러오는 중...',
+            Text('내용 불러오는 중...',
                 style: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF))),
           ],
         ),
@@ -280,7 +307,9 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
   }
 
   Widget _buildContent() {
-    final content = widget.notice.content;
+    final content = widget.notice.content?.trim().isNotEmpty == true
+        ? widget.notice.content
+        : _fetchedContent;
     final hasContent = content != null && content.trim().isNotEmpty;
 
     if (!hasContent) {
@@ -521,7 +550,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: SelectableText(text,
+            child: LinkText(text,
                 style: const TextStyle(
                     fontSize: 15, height: 1.75, color: Color(0xFF374151))),
           ),
@@ -533,7 +562,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
     if (isHeading) {
       return Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: SelectableText(line,
+        child: LinkText(line,
             style: const TextStyle(
                 fontSize: 15,
                 height: 1.6,
@@ -541,7 +570,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
                 fontWeight: FontWeight.w700)),
       );
     }
-    return SelectableText(line,
+    return LinkText(line,
         style: const TextStyle(
             fontSize: 15, height: 1.75, color: Color(0xFF374151)));
   }

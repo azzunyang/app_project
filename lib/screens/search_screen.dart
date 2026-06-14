@@ -87,7 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(fontSize: 14, color: Color(0xFF111827)),
                   decoration: const InputDecoration(
-                    hintText: '제목, 담당 부서로 검색...',
+                    hintText: '공지 제목으로 검색...',
                     hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                     prefixIcon: Icon(Icons.search, color: Color(0xFF9CA3AF), size: 20),
                     border: InputBorder.none,
@@ -121,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> {
             const Text('검색어를 입력하세요',
                 style: TextStyle(color: Color(0xFF6B7280), fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            const Text('제목, 담당 부서로 검색할 수 있어요',
+            const Text('공지 제목으로 검색할 수 있어요',
                 style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
           ]),
         ),

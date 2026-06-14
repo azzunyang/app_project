@@ -116,10 +116,31 @@ class ApiService {
   }
 
   static Future<List<Notice>> search(String keyword) async {
+    // 모든 카테고리에서 병렬 검색 후 날짜 내림차순 정렬
+    final categories = [
+      _categoryCode,
+      _academicCategoryCode,
+      _scholarCategoryCode,
+      _jobCategoryCode,
+      _volunteerCategoryCode,
+      _externalCategoryCode,
+    ];
+    final futures = categories
+        .map((cat) => _searchInCategory(keyword, cat))
+        .toList();
+    final results = await Future.wait(futures);
+    final all = results.expand((l) => l).toList();
+    all.sort((a, b) => b.date.compareTo(a.date));
+    final seen = <String>{};
+    return all.where((n) => seen.add(n.id)).toList();
+  }
+
+  static Future<List<Notice>> _searchInCategory(
+      String keyword, String categoryCode) async {
     final url = Uri.parse(
       '$_baseUrl/Home/BBSList.mbz'
       '?action=$_listAction'
-      '&schCategorycode=$_categoryCode'
+      '&schCategorycode=$categoryCode'
       '&schKeytype=subject'
       '&schKeyword=${Uri.encodeComponent(keyword)}'
       '&pageIndex=1',
@@ -129,7 +150,8 @@ class ApiService {
           .get(url, headers: _headers)
           .timeout(const Duration(seconds: 15));
       if (res.statusCode != 200) return [];
-      return _parseList(utf8.decode(res.bodyBytes, allowMalformed: true));
+      return _parseList(utf8.decode(res.bodyBytes, allowMalformed: true),
+          categoryCode: categoryCode);
     } catch (_) {
       return [];
     }
